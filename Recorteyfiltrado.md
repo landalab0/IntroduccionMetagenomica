@@ -1,4 +1,4 @@
-![image](https://github.com/landalab0/IntroduccionMetagenomica/assets/160524982/78bf90eb-2c12-46f8-a327-2174a2d20381)# Recorte y Filtrado✂️
+# Recorte y Filtrado✂️
 
 Si alguna de nuestras muestras no cumple con las métricas de calidad utilizadas por FASTQC, no significa que debemos desecharlas. En nuestro flujo de trabajo, eliminaremos algunas secuencias de baja calidad para reducir nuestra tasa de falsos positivos debido a errores de secuenciación.
 
