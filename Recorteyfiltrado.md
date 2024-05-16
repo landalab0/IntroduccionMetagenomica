@@ -99,3 +99,104 @@ $ JC1A_R1.fastq.gz  JC1A_R2.fastq.gz  JP4D_R1.fastq  JP4D_R2.fastq.gz  TruSeq3-P
 Ejecutaremos Trimmomatic en una de las muestras de extremos emparejados. 
 
 Mientras usábamos FastQC, vimos que había adaptadores universales en nuestras muestras. Las secuencias del adaptador vienen con la instalación de Trimmomatic y se encuentran en nuestro directorio actual en el archivo TruSeq3-PE.fa.
+
+Usaremos una ventana deslizante de tamaño 4 que eliminará las bases si su puntuación Phred es inferior a 20 y descartaremos cualquier lectura a la que no le queden menos de 25 bases después de este paso de recorte.
+
+Comprimiremos un archivo nuevamente para utilizarlo antes de ejecutar Trimmomatic. 
+
+**`Code`**
+
+$ gzip JP4D_R1.fastq
+
+
+**`Code`**
+
+$ trimmomatic PE JP4D_R1.fastq.gz JP4D_R2.fastq.gz \
+JP4D_R1.trim.fastq.gz  JP4D_R1un.trim.fastq.gz \
+JP4D_R2.trim.fastq.gz  JP4D_R2un.trim.fastq.gz \
+SLIDINGWINDOW:4:20 MINLEN:35 ILLUMINACLIP:TruSeq3-PE.fa:2:40:15
+
+
+**`Output`**
+
+TrimmomaticPE: Started with arguments:
+ JP4D_R1.fastq.gz JP4D_R2.fastq.gz JP4D_R1.trim.fastq.gz JP4D_R1un.trim.fastq.gz JP4D_R2.trim.fastq.gz JP4D_R2un.trim.fastq.gz SLIDINGWINDOW:4:20 MINLEN:35 ILLUMINACLIP:TruSeq3-PE.fa:2:40:15
+Multiple cores found: Using 2 threads
+Using PrefixPair: 'TACACTCTTTCCCTACACGACGCTCTTCCGATCT' and 'GTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT'
+ILLUMINACLIP: Using 1 prefix pairs, 0 forward/reverse sequences, 0 forward only sequences, 0 reverse only sequences
+Quality encoding detected as phred33
+Input Read Pairs: 1123987 Both Surviving: 751427 (66.85%) Forward Only Surviving: 341434 (30.38%) Reverse Only Surviving: 11303 (1.01%) Dropped: 19823 (1.76%)
+TrimmomaticPE: Completed successfully
+
+Ahora veremos que nuestros archivos de salida sigan ahí:
+
+**`Code`**
+
+$ ls JP4D*
+
+**`Output`**
+
+JP4D_R1.fastq.gz       JP4D_R1un.trim.fastq.gz	JP4D_R2.trim.fastq.gz
+JP4D_R1.trim.fastq.gz  JP4D_R2.fastq.gz		JP4D_R2un.trim.fastq.gz
+
+Nuestros archivos de salida son archivos FASTQ, y deberían ser más pequeños que los archivos de entrada porque hemos eliminado las lecturas. 
+
+**`Code`**
+
+$ ls JP4D* -l -h
+
+**`Output`**
+
+-rw-r--r-- 1 dcuser dcuser 179M Nov 26 12:44 JP4D_R1.fastq.gz
+-rw-rw-r-- 1 dcuser dcuser 107M Mar 11 23:05 JP4D_R1.trim.fastq.gz
+-rw-rw-r-- 1 dcuser dcuser  43M Mar 11 23:05 JP4D_R1un.trim.fastq.gz
+-rw-r--r-- 1 dcuser dcuser 203M Nov 26 12:51 JP4D_R2.fastq.gz
+-rw-rw-r-- 1 dcuser dcuser 109M Mar 11 23:05 JP4D_R2.trim.fastq.gz
+-rw-rw-r-- 1 dcuser dcuser 1.3M Mar 11 23:05 JP4D_R2un.trim.fastq.gz
+
+¡Ejecutamos Trimmomatic! Ufff, lo hicimosss. Pero ojito 👀 solo lo hicimos en una archivo FASTQ, ya que Trimmomatuc solo puede operar con una muestra a la vez, y tenemos más de una muestra. ¿Y ahora? Podemos usar un **`for`** bucle para recorrer nuestros archivps de muestra rápidamente.
+
+**`Code`**
+$ for infile in *_R1.fastq.gz
+do
+base=$(basename ${infile} _R1.fastq.gz)
+trimmomatic PE ${infile} ${base}_R2.fastq.gz \
+${base}_R1.trim.fastq.gz ${base}_R1un.trim.fastq.gz \
+${base}_R2.trim.fastq.gz ${base}_R2un.trim.fastq.gz \
+SLIDINGWINDOW:4:20 MINLEN:35 ILLUMINACLIP:TruSeq3-PE.fa:2:40:15
+done
+
+
+Trimmomatic se habrá ejecutado para cada uno de nuestros cuatro archivos de entrada, para verlo, identificaremos el contenido de nuestro directorio. Veremos que aunque ejecutamos Trimmomatic en el archivo JP4D antes de ejecutar el bucle for, solo hay un conjunto de archivos para él ya que lo ejecutamos dos veces y sobreescribimos nuestros primeros resultados.
+
+**`Code`**
+
+$ ls
+
+**`Output`**
+
+JC1A_R1.fastq.gz                     JP4D_R1.fastq.gz                                    
+JC1A_R1.trim.fastq.gz                JP4D_R1.trim.fastq.gz                                
+JC1A_R1un.trim.fastq.gz              JP4D_R1un.trim.fastq.gz                                
+JC1A_R2.fastq.gz                     JP4D_R2.fastq.gz                                 
+JC1A_R2.trim.fastq.gz                JP4D_R2.trim.fastq.gz                                 
+JC1A_R2un.trim.fastq.gz              JP4D_R2un.trim.fastq.gz                                 
+TruSeq3-PE.fa   
+
+Completamos los pasos de recorte y filtrado de nuestro proceso de control de calidad. Ahora moveremos nuestros archivos FASTQ recortados a un nuevo subdirectorio dentro de nuestro directorio data/
+
+**`Code`**
+
+$ cd ~/dc_workshop/data/untrimmed_fastq
+$ mkdir ../trimmed_fastq
+$ mv *.trim* ../trimmed_fastq
+$ cd ../trimmed_fastq
+$ ls
+
+**`Output`**
+
+JC1A_R1.trim.fastq.gz    JP4D_R1.trim.fastq.gz                
+JC1A_R1un.trim.fastq.gz  JP4D_R1un.trim.fastq.gz              
+JC1A_R2.trim.fastq.gz    JP4D_R2.trim.fastq.gz                
+JC1A_R2un.trim.fastq.gz  JP4D_R2un.trim.fastq.gz
+
