@@ -2,7 +2,7 @@
 
 En este paso evaluaremos la calidad de las lecturas de secuencias contenidas en nuestros archivos FASTQ.
 
-## ¿FASTQ? ¿🙀?
+## ¿FASTQ QUÉ? ¿🙀?
 Tranquiii. FASTQ es un formato de archivo utilizado en bioinformática para almacenar secuencias de AND y sus correspondientes calidades de base.
 Este formato tiene algunas características: 
 
